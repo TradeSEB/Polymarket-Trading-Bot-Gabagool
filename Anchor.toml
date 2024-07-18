@@ -4,15 +4,15 @@
 resolution = true
 skip-lint = false
 
-[programs.localnet]
-presale = "JCRb6PfVqSLj86Bh2y6Wp4rx76mKqZsFsFDfvX8tSQeF"
+[programs.devnet]
+presale = "6En2g3XUQgZSBEgBE1DF1sVeRik4KNvug151Zswz8oR5"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-wallet = "../key/uu.json"
+cluster = "devnet"
+wallet = "admin.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/presale.ts"
