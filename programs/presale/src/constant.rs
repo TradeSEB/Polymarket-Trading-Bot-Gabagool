@@ -1,14 +1,14 @@
 use solana_program::{pubkey, pubkey::Pubkey};
 
 //  seeds
-pub const GLOBAL_SEED: &[u8] = b"genius-global";
+pub const GLOBAL_SEED: &[u8] = b"presale-global";
 
 //  address of stable coins
 // pub const USDC_ADDRESS: Pubkey = pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 // pub const USDT_ADDRESS: Pubkey = pubkey!("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
 
 //  test addresses
-pub const USDC_ADDRESS: Pubkey = pubkey!("usdZFjpRFJaMGnzLCm4S1QXCdEk9LgDBWSxF8jDkx4e");
+pub const USDC_ADDRESS: Pubkey = pubkey!("usdRLypwfSeEUw4DhUcscCcju6zzBviXymFBRjcBXTw");
 pub const USDT_ADDRESS: Pubkey = pubkey!("usderEuWoVkjMcc3bEYkGopx78La8mHzt6YGdmErrpz");
 
 pub const NUM_STAGES: u8 = 10;
