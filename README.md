@@ -65,3 +65,40 @@ In the folder `token-presale`
 
 
 run `anchor test` to check test the smart contract
+
+### Test on devnet
+
+You should build and deploy on devnet first.
+
+Check the program address and USDC, USDT address.
+
+#### - Initialize project
+
+`yarn script init -t <TOKEN_ADDRESS>`
+
+e.g. yarn script init -t 5U6PVxcjCWo361vFwS6cfB65Br4T5jECA6vsVAtm5urt
+
+#### - Set DAO wallet address
+
+`yarn script set-vault -v <DAO_WALLET_ADDRESS>`
+
+e.g. yarn script set-vault -v DJDcV3UxP55KqHUKsTSBve7xssRYtbQ5eSG8uWND2HQ7
+
+#### - Deposit token to the program
+
+`yarn script deposit-token -t <TOKEN_ADDRESS> -a <DEPOSIT_ADMOUNT>`
+
+e.g. yarn script deposit-token -t 5U6PVxcjCWo361vFwS6cfB65Br4T5jECA6vsVAtm5urt -a 200000000000000
+
+
+#### - Start presale
+
+`yarn script start-presale -t <TOKEN_ADDRESS>`
+
+e.g. yarn script start-presale -t 5U6PVxcjCWo361vFwS6cfB65Br4T5jECA6vsVAtm5urt
+
+#### - Set stage
+
+`yarn script set-stage -s <STAGE_NUMBER>`
+
+e.g. yarn script set-stage -s 1
