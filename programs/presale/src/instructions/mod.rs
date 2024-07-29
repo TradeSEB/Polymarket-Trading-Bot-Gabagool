@@ -2,8 +2,6 @@ pub mod initialize;
 pub use initialize::*;
 pub mod change_admin;
 pub use change_admin::*;
-pub mod deposit_presale_token;
-pub use deposit_presale_token::*;
 pub mod set_vault_address;
 pub use set_vault_address::*;
 pub mod start_presale;

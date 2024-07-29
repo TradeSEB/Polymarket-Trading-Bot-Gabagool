@@ -23,31 +23,7 @@ pub struct BuyWithStableCoin<'info> {
     /// CHECK: vault address(multi-sig wallet)
     pub vault: AccountInfo<'info>,
 
-    //  store tokens to be sold
-    #[account(
-        mut,
-        associated_token::mint = token,
-        associated_token::authority = global_state,
-    )]
-    pub token_vault: Box<Account<'info, TokenAccount>>,
-
-    //  ata of user
-    #[account(
-        init_if_needed,
-        payer = user,
-        associated_token::mint = token,
-        associated_token::authority = user,
-    )]
-    pub token_user: Box<Account<'info, TokenAccount>>,
-
-    // token address
-    #[account(
-        constraint = global_state.token == token.key() @PresaleError::InvalidToken
-    )]
-    /// CHECK: 
-    pub token: Account<'info, Mint>,
-
-
+    
     //  stable coin ata of user
     #[account(
         mut,
@@ -132,18 +108,7 @@ impl BuyWithStableCoin<'_> {
             ctx.accounts.stable_coin_vault.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
             stable_coin_amount,
-        )?;
-
-        //  transfer token to user
-        token_transfer_with_signer(
-            ctx.accounts.token_vault.to_account_info(),
-            ctx.accounts.global_state.to_account_info(),
-            ctx.accounts.token_user.to_account_info(),
-            ctx.accounts.token_program.to_account_info(),
-            &[&[GLOBAL_SEED.as_ref(), &[ctx.bumps.global_state]]],
-            token_amount * TOKEN_DECIMALS,
-        )?;
-
-        Ok(())
+        )
+        
     }
 }
