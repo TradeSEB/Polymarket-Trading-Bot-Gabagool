@@ -30,14 +30,6 @@ pub mod presale {
         change_admin::process_change_admin(ctx, new_admin)
     }
 
-    //  admin deposits tokens to be sold
-    pub fn deposit_presale_token(
-        ctx: Context<DepositPresaleToken>,
-        amount: u64
-    ) -> Result<()> {
-        DepositPresaleToken::process_instruction(ctx, amount)
-    }
-
     //  Admin can set the vault address
     pub fn set_vault_address(
         ctx: Context<SetVaultAddress>

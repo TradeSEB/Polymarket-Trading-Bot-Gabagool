@@ -11,13 +11,6 @@ pub struct GlobalState {
 
     //  address of multi sig wallet
     pub vault: Pubkey,
-    
-
-    //  adress of token to be sold
-    pub token: Pubkey,
-
-    //  amount of total token to be sold
-    pub total_amount: u64,
 
 
     //  total tokens sold
