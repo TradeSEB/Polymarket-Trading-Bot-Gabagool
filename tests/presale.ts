@@ -4,7 +4,7 @@ import {
   PublicKey
 } from "@solana/web3.js";
 
-import { GLOBAL_SEED, LAMPORTS_PER_SOL } from "./constant";
+import { GLOBAL_SEED, USER_SEED, LAMPORTS_PER_SOL } from "./constant";
 import { connection, program, usdcKp, usdtKp, vaultKp } from "./config";
 import { createMints } from "./create-mints";
 import { airdropToken } from "./airdrop-tokens";
@@ -15,11 +15,9 @@ import { expect } from 'chai';
 describe("presale", () => {
 
   const adminKp = Keypair.generate();
-  const mintKp = Keypair.generate();
   const userKp = Keypair.generate();
 
   console.log("admin: ", adminKp.publicKey.toBase58());
-  console.log("mint: ", mintKp.publicKey.toBase58());
   console.log("user: ", userKp.publicKey.toBase58());
 
   before(async () => {
@@ -44,13 +42,12 @@ describe("presale", () => {
     );
     await connection.confirmTransaction(airdropTx3);
 
-    console.log("create spl token to be sold");
-    await createMints(mintKp, adminKp);
+    console.log("create USDC/USDT");
+    await createMints(adminKp);
 
     console.log("airdrop tokens");
     await airdropToken(usdcKp, usdcKp, adminKp, userKp.publicKey, 1_000_000_000);
     await airdropToken(usdtKp, usdtKp, adminKp, userKp.publicKey, 1_000_000_000);
-    await airdropToken(mintKp, adminKp, adminKp, adminKp.publicKey, 200_000_000 * 1_000_000);
   });
 
   it("Is initialized!", async () => {
@@ -60,20 +57,14 @@ describe("presale", () => {
     );
     console.log("globalStateAddr: ", globalStateAddr.toBase58());
 
-    const tokenVault = getAssociatedTokenAccount(globalStateAddr, mintKp.publicKey);
-    console.log("tokenVault: ", tokenVault.toBase58());
-
     const tx = await program.methods.initialize()
       .accounts({
         admin: adminKp.publicKey,
-        token: mintKp.publicKey,
-        tokenVault
       })
       .signers([adminKp])
       .rpc();
     console.log("initialize tx: ", tx);
 
-    
     const globalState = await program.account.globalState.fetch(globalStateAddr);
     const sum = globalState.remainTokens.reduce((acc, num) => acc + num.toNumber(), 0);
     console.log("total tokens needed: ", sum);
@@ -105,48 +96,17 @@ describe("presale", () => {
     console.log("multi-sig wallet addr: ", globalState.vault.toBase58());
   });
   
-  it("Deposit presale token to program", async () => {
-    const [globalStateAddr, _] = PublicKey.findProgramAddressSync(
-      [Buffer.from(GLOBAL_SEED)],
-      program.programId
-    );
-    const tokenAdmin = getAssociatedTokenAccount(adminKp.publicKey, mintKp.publicKey);
-    const tokenVault = getAssociatedTokenAccount(globalStateAddr, mintKp.publicKey);
-
-    console.log("globalStateAddr: ", globalStateAddr.toBase58());
-    console.log("tokenAdmin: ", tokenAdmin.toBase58());
-    console.log("tokenVault: ", tokenVault.toBase58());
-
-    const tx = await program.methods.depositPresaleToken(new BN(200_000_000 * 1_000_000))
-      .accounts({
-        admin: adminKp.publicKey,
-        token: mintKp.publicKey,
-        tokenAdmin,
-        tokenVault
-      })
-      .signers([adminKp])
-      .rpc({commitment: "confirmed"});
-    console.log("deposit token tx: ", tx);
-
-    const balance = await connection.getTokenAccountBalance(tokenVault, "confirmed");
-    console.log("deposited presale token balance: ", balance.value.amount);
-  });
-
   it("Start presale", async () => {
     const [globalStateAddr, _] = PublicKey.findProgramAddressSync(
       [Buffer.from(GLOBAL_SEED)],
       program.programId
     );
-    const tokenVault = getAssociatedTokenAccount(globalStateAddr, mintKp.publicKey);
     
     console.log("globalStateAddr: ", globalStateAddr.toBase58());
-    console.log("tokenVault: ", tokenVault.toBase58());
 
     const tx = await program.methods.startPresale()
       .accounts({
-        admin: adminKp.publicKey,
-        token: mintKp.publicKey,
-        tokenVault
+        admin: adminKp.publicKey
       })
       .signers([adminKp])
       .rpc();
@@ -187,39 +147,58 @@ describe("presale", () => {
     console.log("set stage tx: ", tx2)
   });
 
+  it("Initialize user state", async () => {
+    const [userStateAddr, _userIx] = PublicKey.findProgramAddressSync(
+      [userKp.publicKey.toBuffer(), Buffer.from(USER_SEED)],
+      program.programId
+    );
+    
+    console.log("userStateAddr: ", userStateAddr.toBase58());
+
+    const tx = await program.methods.initUser()
+      .accounts({
+        user: userKp.publicKey,
+        
+      })
+      .signers([userKp])
+      .rpc();
+
+    console.log("init user tx: ", tx);
+
+    const userState = await program.account.userState.fetch(userStateAddr);
+    expect(userState).to.not.be.null;
+  });
+
   it("User buys token with SOL", async () => {
     const [globalStateAddr, _] = PublicKey.findProgramAddressSync(
       [Buffer.from(GLOBAL_SEED)],
       program.programId
     );
-    const tokenVault = getAssociatedTokenAccount(globalStateAddr, mintKp.publicKey);
-    const tokenUser = getAssociatedTokenAccount(userKp.publicKey, mintKp.publicKey);
+    const [userStateAddr, _userIx] = PublicKey.findProgramAddressSync(
+      [userKp.publicKey.toBuffer(), Buffer.from(USER_SEED)],
+      program.programId
+    );
     
     console.log("globalStateAddr: ", globalStateAddr.toBase58());
-    console.log("tokenVault: ", tokenVault.toBase58());
-    console.log("tokenUser: ", tokenUser.toBase58());
+    console.log("userStateAddr: ", userStateAddr.toBase58());
 
-    let balanceBefore = 0;
-    const tokenUserInfo = await connection.getAccountInfo(tokenUser);
-    if (tokenUserInfo)
-      balanceBefore = (await connection.getTokenAccountBalance(tokenUser, "confirmed")).value.uiAmount;
+    const userState = await program.account.userState.fetch(userStateAddr, "confirmed");
+    const balanceBefore = Number(userState.tokens);
 
     const buyAmount = 1_000_000_000;  //  1 SOL
 
     const tx = await program.methods.buy(new BN(buyAmount))
       .accounts({
         user: userKp.publicKey,
-        token: mintKp.publicKey,
         vault: vaultKp.publicKey,
-        tokenUser,
-        tokenVault
       })
       .signers([userKp])
       .rpc({commitment: "confirmed"});
 
     console.log("buy with SOL tx: ", tx);
 
-    const balanceAfter = (await connection.getTokenAccountBalance(tokenUser, "confirmed")).value.uiAmount;
+    const userStateAfter = await program.account.userState.fetch(userStateAddr, "confirmed");
+    const balanceAfter = Number(userStateAfter.tokens);
 
     console.log("bought token amout: ", balanceAfter - balanceBefore);
   });
@@ -229,31 +208,26 @@ describe("presale", () => {
       [Buffer.from(GLOBAL_SEED)],
       program.programId
     );
-    const tokenVault = getAssociatedTokenAccount(globalStateAddr, mintKp.publicKey);
-    const tokenUser = getAssociatedTokenAccount(userKp.publicKey, mintKp.publicKey);
+    const [userStateAddr, _userIx] = PublicKey.findProgramAddressSync(
+      [userKp.publicKey.toBuffer(), Buffer.from(USER_SEED)],
+      program.programId
+    );
     const stableCoinUser = getAssociatedTokenAccount(userKp.publicKey, usdcKp.publicKey);
     const stableCoinVault = getAssociatedTokenAccount(vaultKp.publicKey, usdcKp.publicKey);
     
     console.log("globalStateAddr: ", globalStateAddr.toBase58());
-    console.log("tokenVault: ", tokenVault.toBase58());
-    console.log("tokenUser: ", tokenUser.toBase58());
     console.log("stableCoinUser: ", stableCoinUser.toBase58());
     console.log("stableCoinVault: ", stableCoinVault.toBase58());
 
-    let balanceBefore = 0;
-    const tokenUserInfo = await connection.getAccountInfo(tokenUser);
-    if (tokenUserInfo)
-      balanceBefore = (await connection.getTokenAccountBalance(tokenUser, "confirmed")).value.uiAmount;
+    const userState = await program.account.userState.fetch(userStateAddr, "confirmed");
+    const balanceBefore = Number(userState.tokens);
 
     const buyAmount = 1_000_000_000;  //  1000 USDC
 
     const tx = await program.methods.buyWithStableCoin(new BN(buyAmount))
       .accounts({
         user: userKp.publicKey,
-        token: mintKp.publicKey,
         vault: vaultKp.publicKey,
-        tokenUser,
-        tokenVault,
         stableCoin: usdcKp.publicKey,
         stableCoinUser,
         stableCoinVault
@@ -263,9 +237,16 @@ describe("presale", () => {
 
     console.log("buy with USDC tx: ", tx);
 
-    const balanceAfter = (await connection.getTokenAccountBalance(tokenUser, "confirmed")).value.uiAmount;
+    const userStateAfter = await program.account.userState.fetch(userStateAddr, "confirmed");
+    const balanceAfter = Number(userStateAfter.tokens);
 
     console.log("bought token amout: ", balanceAfter - balanceBefore);
+  });
+
+  it("Get all user info", async () => {
+
+    const userInfos = await program.account.userState.all();
+    console.log(userInfos);
   });
 
 });
