@@ -10,6 +10,8 @@ pub mod set_live;
 pub use set_live::*;
 pub mod set_stage;
 pub use set_stage::*;
+pub mod init_user;
+pub use init_user::*;
 pub mod buy;
 pub use buy::*;
 pub mod buy_with_stable_coin;

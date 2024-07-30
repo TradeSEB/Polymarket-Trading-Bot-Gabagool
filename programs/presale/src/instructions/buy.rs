@@ -1,8 +1,5 @@
 use crate::*;
-use anchor_spl::{ 
-    associated_token::AssociatedToken,
-    token::Token
-};
+
 use pyth_sdk_solana::state::SolanaPriceAccount;
 use solana_program::native_token::LAMPORTS_PER_SOL;
 
@@ -21,6 +18,13 @@ pub struct Buy<'info> {
     )]
     pub global_state: Account<'info, GlobalState>,
 
+    //  User pool stores user's buy info
+    #[account(
+        mut,
+        seeds = [user.key().as_ref(), USER_SEED.as_ref()],
+        bump
+    )]
+    pub user_state: Account<'info, UserState>,
     
     #[account(
         mut
@@ -33,12 +37,8 @@ pub struct Buy<'info> {
     /// CHECK:
     pub price_feed: AccountInfo<'info>,
 
-
-    pub token_program: Program<'info, Token>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
-
-    //  Needed to init new account
-    pub system_program: Program<'info, System>,
+    //  Needed to transfer SOL
+    pub system_program: Program<'info, System>
 }
 
 impl Buy<'_> {
@@ -101,6 +101,10 @@ impl Buy<'_> {
         //  add total USD received
         global_state.token_sold_usd += asset_price as u64 * sol_amount;
         
+        //  add user info
+        let user_state = &mut ctx.accounts.user_state;
+        user_state.tokens += token_amount;
+        user_state.paid_sol += sol_amount;
 
         //  transfer SOL to vault
         sol_transfer_user(

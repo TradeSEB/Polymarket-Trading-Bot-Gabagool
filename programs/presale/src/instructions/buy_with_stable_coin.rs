@@ -19,6 +19,14 @@ pub struct BuyWithStableCoin<'info> {
     )]
     pub global_state: Account<'info, GlobalState>,
 
+    //  User pool stores user's buy info
+    #[account(
+        mut,
+        seeds = [user.key().as_ref(), USER_SEED.as_ref()],
+        bump
+    )]
+    pub user_state: Account<'info, UserState>,
+
     
     /// CHECK: vault address(multi-sig wallet)
     pub vault: AccountInfo<'info>,
@@ -47,9 +55,6 @@ pub struct BuyWithStableCoin<'info> {
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
-
-    //  Needed to init new account
-    pub system_program: Program<'info, System>,
 }
 
 impl BuyWithStableCoin<'_> {
@@ -100,6 +105,10 @@ impl BuyWithStableCoin<'_> {
         //  add total USD received
         global_state.token_sold_usd += stable_coin_amount;
 
+        //  add user info
+        let user_state = &mut ctx.accounts.user_state;
+        user_state.tokens += token_amount;
+        user_state.paid_sol += stable_coin_amount;
 
         //  transfer stable coin to vault
         token_transfer_user(
