@@ -7,14 +7,7 @@ import {
 import { createMint } from "@solana/spl-token";
 import { connection, usdcKp, usdtKp } from "./config";
 
-export const createMints = async (mintKp: Keypair, payer: Keypair) => {
-    const mintPk = await createMintAcct(
-        mintKp,
-        payer,
-        payer.publicKey
-    );
-
-    console.log(`token to be sold: ${mintPk.toBase58()}`);
+export const createMints = async (payer: Keypair) => {
 
     //  create USDC account if it's not exist
     
