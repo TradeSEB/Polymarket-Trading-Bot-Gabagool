@@ -108,7 +108,7 @@ impl BuyWithStableCoin<'_> {
         //  add user info
         let user_state = &mut ctx.accounts.user_state;
         user_state.tokens += token_amount;
-        user_state.paid_sol += stable_coin_amount;
+        user_state.paid_usd += stable_coin_amount;
 
         //  transfer stable coin to vault
         token_transfer_user(
