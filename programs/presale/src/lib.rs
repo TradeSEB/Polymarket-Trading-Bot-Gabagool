@@ -61,6 +61,13 @@ pub mod presale {
         SetStage::process_instruction(ctx, stage)
     }
 
+    //  Initialize user state
+    pub fn init_user(
+        ctx: Context<InitUser>
+    ) -> Result<()> {
+        InitUser::process_instruction(ctx)
+    }
+
     //  Buy with SOL
     pub fn buy(
         ctx: Context<Buy>, 

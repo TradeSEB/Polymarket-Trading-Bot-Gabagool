@@ -39,3 +39,23 @@ impl GlobalState {
         }
     }
 }
+
+
+/**
+ * Stores user info
+ */
+ #[account]
+ #[derive(Default)]
+ pub struct UserState {
+     //  user address
+     pub user: Pubkey,
+ 
+     //  token amount user bought
+     pub tokens: u64,
+
+     //  SOL amount user paid
+     pub paid_sol: u64,
+
+     //  stable coin user paid
+     pub paid_usd: u64
+ }

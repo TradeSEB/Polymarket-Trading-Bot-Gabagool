@@ -2,6 +2,7 @@ use solana_program::{pubkey, pubkey::Pubkey};
 
 //  seeds
 pub const GLOBAL_SEED: &[u8] = b"presale-global";
+pub const USER_SEED: &[u8] = b"presale-user";
 
 //  address of stable coins
 // pub const USDC_ADDRESS: Pubkey = pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
