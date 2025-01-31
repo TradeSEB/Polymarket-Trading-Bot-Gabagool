@@ -102,3 +102,6 @@ e.g. yarn script start-presale -t 5U6PVxcjCWo361vFwS6cfB65Br4T5jECA6vsVAtm5urt
 `yarn script set-stage -s <STAGE_NUMBER>`
 
 e.g. yarn script set-stage -s 1
+
+
+### Feel free to reach out of me if you have issue[Whatsapp: https://wa.me/13137423660, telegram: https://t.me/DevCutup].
