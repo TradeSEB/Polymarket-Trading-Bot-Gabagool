@@ -1,10 +1,27 @@
 {
   "compilerOptions": {
-    "types": ["mocha", "chai", "node"],
-    "typeRoots": ["./node_modules/@types"],
-    "lib": ["es2015"],
-    "module": "commonjs",
-    "target": "es2022",
-    "esModuleInterop": true
-  }
+    "target": "ES2021",
+    "module": "CommonJS",
+
+    "rootDir": "src",
+    "outDir": "dist",
+
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+
+    "strict": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+
+    "forceConsistentCasingInFileNames": true,
+
+    "sourceMap": true,
+    "removeComments": false
+  },
+
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }
+  
